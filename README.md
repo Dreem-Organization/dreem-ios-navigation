@@ -18,6 +18,7 @@
     - [showModal](#showModal) 
     - [dismissModal](#dismissModal) 
     - [clearBackstack](#clearBackstack) 
+ - [Sample](#sample) 
  - [Installation](#installation) 
 
 
@@ -226,6 +227,9 @@ private class HomeViewModel: ObservableObject {
     }
 }
 ```
+
+## Sample
+You can find a sample <a href="https://github.com/Dreem-Organization/dreem-ios-navigation/tree/main/Sample/DreemNavSample" target="_blank">HERE</a>
 
 
 ## Installation

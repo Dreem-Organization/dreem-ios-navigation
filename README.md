@@ -6,6 +6,7 @@
 
 # Contents
  - [Introduction](#introduction) 
+ - [Installation](#installation)
  - [Public architecture](#public-architecture) 
     - [NavController](#navController) 
     - [NavGraphBuilder](#navGraphBuilder) 
@@ -18,8 +19,7 @@
     - [showModal](#showModal) 
     - [dismissModal](#dismissModal) 
     - [clearBackstack](#clearBackstack) 
- - [Sample](#sample) 
- - [Installation](#installation) 
+ - [Sample](#sample)  
 
 
 ## Introduction
@@ -28,7 +28,30 @@
 As the native navigation component provided by SwiftUI lacked legacys animation, this library has been
 built to wrap the old good UIKit system and provide it through a SwiftUI interface and a developer friendly
 way to implement it.
- 
+
+
+## Installation
+
+- **Using  [CocoaPods](https://cocoapods.org)**:
+
+    ```ruby
+    pod 'DreemNav'
+    ```
+
+- **Using [Swift Package Manager](https://swift.org/package-manager)**:
+
+    ```swift
+    import PackageDescription
+
+    let package = Package(
+        name: "YourPackage",
+        dependencies: [
+            .package(url: "https://github.com/Dreem-Organization/dreem-ios-navigation", from: "1.0.0")
+      ]
+    )
+    ```
+    
+    
 ## Public architecture
 ### NavController
 Which is the part of the Navigation that orchestrate how screens are displayed.
@@ -230,28 +253,6 @@ private class HomeViewModel: ObservableObject {
 
 ## Sample
 You can find a sample <a href="https://github.com/Dreem-Organization/dreem-ios-navigation/tree/main/Sample/DreemNavSample" target="_blank">HERE</a>
-
-
-## Installation
-
-- **Using  [CocoaPods](https://cocoapods.org)**:
-
-    ```ruby
-    pod 'DreemNav'
-    ```
-
-- **Using [Swift Package Manager](https://swift.org/package-manager)**:
-
-    ```swift
-    import PackageDescription
-
-    let package = Package(
-        name: "YourPackage",
-        dependencies: [
-            .package(url: "https://github.com/Dreem-Organization/dreem-ios-navigation", from: "1.0.0")
-      ]
-    )
-    ```
 
 
 ## License

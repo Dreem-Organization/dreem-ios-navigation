@@ -6,9 +6,9 @@ internal class ScreenStack: NavigationController {
     private var endIndex: Int { stack.endIndex - 1 }
     var lastScreen: Screen { stack[endIndex] }
     
-    init(graph: NavGraph, firstScreenName: String) {
+    init(graph: NavGraph, firstScreenName: String, arguments: [String:Any] = [:]) {
         self.graph = graph
-        let firstScreen = graph.buildScreen(from: firstScreenName)!
+        let firstScreen = graph.buildScreen(from: firstScreenName, and: arguments)!
         self.stack = [firstScreen]
         super.init(viewController: firstScreen)
     }

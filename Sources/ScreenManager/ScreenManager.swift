@@ -74,7 +74,7 @@ internal class ScreenManager {
         arguments: [String: Any]
     ) {
         if modalScreenStack == nil {
-            modalScreenStack = ScreenStack(graph: graph, firstScreenName: screenName)
+            modalScreenStack = ScreenStack(graph: graph, firstScreenName: screenName, arguments: arguments)
             mainScreenStack.present(modalScreenStack!, animated: true)
             modalScreenStack!.setOnViewBeingDismissed { [unowned self] in self.modalScreenStack = nil }
         } else {

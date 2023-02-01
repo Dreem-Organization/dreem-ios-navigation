@@ -7,7 +7,6 @@ internal class NavigationController: UINavigationController {
     init(viewController: UIViewController) {
         super.init(nibName: nil, bundle: nil)
         super.setViewControllers([viewController], animated: true)
-        self.view.backgroundColor = nil
     }
     
     func setOnViewBeingDismissed(block: (() -> Void)? = nil) {

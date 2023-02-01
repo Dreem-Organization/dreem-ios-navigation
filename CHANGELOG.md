@@ -18,12 +18,17 @@ Mention whether you follow Semantic Versioning.
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
+## [1.0.2] - 2023-02-01
+
+### Fixed
+- `Screen` and `NavigationController` backgrounds to transparent
+
 ## [1.0.1] - 2023-01-30
 
-###Fixed
+### Fixed
 - Missing `arguments` use while pushing a new modal.
 
 ## [1.0.0] - 2023-01-09
 
-###Added
+### Added
 - The whole Module

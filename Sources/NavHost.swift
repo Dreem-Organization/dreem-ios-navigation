@@ -24,12 +24,13 @@ import SwiftUI
 public struct NavHost: View {
     @ObservedObject private var controller: NavController
     
-    public init(controller: NavController) {
+    public init(controller: NavController, backgroundColor: Color = .clear) {
         self.controller = controller
+        ScreenTheme.backgroundColor = backgroundColor
     }
     
     public var body: some View {
-        self.representable
+        self.representable.background(ScreenTheme.backgroundColor.edgesIgnoringSafeArea(.all))
     }
 }
 

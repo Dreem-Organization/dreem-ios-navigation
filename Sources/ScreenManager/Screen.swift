@@ -13,8 +13,7 @@ internal class Screen: UIHostingController<AnyView>, Identifiable {
     ) {
         self.name = name
         self.arguments = arguments
-        super.init(rootView: AnyView(view))
-        self.view.backgroundColor = nil
+        super.init(rootView: AnyView(view.background(ScreenTheme.backgroundColor.edgesIgnoringSafeArea(.all))))
     }
     
     required init?(coder aDecoder: NSCoder) {

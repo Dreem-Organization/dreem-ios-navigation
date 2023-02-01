@@ -18,6 +18,11 @@ Mention whether you follow Semantic Versioning.
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
+## [1.1.0] - 2023-02-01
+
+### Added
+- `backgroundColor` customization through NavHost
+
 ## [1.0.2] - 2023-02-01
 
 ### Fixed

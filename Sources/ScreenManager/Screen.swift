@@ -14,6 +14,7 @@ internal class Screen: UIHostingController<AnyView>, Identifiable {
         self.name = name
         self.arguments = arguments
         super.init(rootView: AnyView(view))
+        self.view.backgroundColor = nil
     }
     
     required init?(coder aDecoder: NSCoder) {

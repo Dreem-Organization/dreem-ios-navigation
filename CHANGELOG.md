@@ -18,6 +18,17 @@ Mention whether you follow Semantic Versioning.
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
+## [1.2.0] - 2023-03-03
+
+### Added
+- new `push` function with `content` parameter 
+- `.dialog` and `.sheet` TransitionStyles
+- `inclusive` parameter to `popTo`
+
+### Removed
+- `dismissModal`
+- `showModal`
+
 ## [1.1.0] - 2023-02-01
 
 ### Added

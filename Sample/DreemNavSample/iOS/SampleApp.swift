@@ -3,9 +3,9 @@ import DreemNav
 
 struct Route {
     let name: String
-    let arguments: [String: Any]
+    let arguments: [String : Any]
     
-    init(name: String, arguments: [String: Any] = [:]) {
+    init(name: String, arguments: [String : Any] = [:]) {
         self.name = name
         self.arguments = arguments
     }
@@ -30,6 +30,13 @@ struct SampleApp: App {
             graph.screen("LastName") { navParams in
                 let firstName = navParams["first_name"] as! String
                 LastNameScreen(firstName: firstName)
+            }
+            
+            graph.screen("ConfirmationDialog") { navParams in
+                if let onClickNo = navParams["onClickNo"] as? () -> Void ,
+                   let onClickYes = navParams["onClickYes"] as? () -> Void {
+                    ConfirmationDialog(onClickNo: onClickNo, onClickYes: onClickYes)
+                }
             }
         }
     

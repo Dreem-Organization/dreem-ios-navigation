@@ -72,8 +72,8 @@ struct LastNameContent: View {
             print("\nLastName disappeared")
         }
     }
-    
-    
+
+
 }
 
 
@@ -96,13 +96,32 @@ fileprivate class LastNameViewModel: ObservableObject {
     func backToFirstName() { controller.pop() }
     
     func backToHome() {
-        controller.pop(
-            to: Route.Home.name,
+        controller.push(
+            screenName: "ConfirmationDialog",
             arguments: [
-                "first_name": firstName,
-                "last_name": lastName,
-            ]
+                "onClickNo": { self.controller.pop() },
+                "onClickYes": {
+                    self.controller.pop(
+                        to: "Splash",
+                        arguments: [
+                            "first_name": self.firstName,
+                            "last_name": self.lastName,
+                        ]
+                    )
+                }
+           ],
+            transition: .dialog
         )
+        
+        if self.lastName.isEmpty {
+                controller.push(
+                    screenName: "WarningDialog",
+                    transition: .dialog,
+                    content: {
+                        WarningDialog { self.controller.pop() }
+                    }
+                )
+        }
     }
     
 }

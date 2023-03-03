@@ -18,6 +18,8 @@
 		1454DC3B2966F69F001F2117 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1454DC3A2966F69F001F2117 /* Colors.swift */; };
 		1454DC3D2966F6B5001F2117 /* GlobalContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1454DC3C2966F6B5001F2117 /* GlobalContainer.swift */; };
 		1454DC3F2966F6CD001F2117 /* AppAssembly.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1454DC3E2966F6CD001F2117 /* AppAssembly.swift */; };
+		148E8F8A29B21970009D2521 /* WarningDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 148E8F8929B21970009D2521 /* WarningDialog.swift */; };
+		148E8F8C29B219C1009D2521 /* ConfirmationDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 148E8F8B29B219C1009D2521 /* ConfirmationDialog.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +34,8 @@
 		1454DC3A2966F69F001F2117 /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		1454DC3C2966F6B5001F2117 /* GlobalContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalContainer.swift; sourceTree = "<group>"; };
 		1454DC3E2966F6CD001F2117 /* AppAssembly.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppAssembly.swift; sourceTree = "<group>"; };
+		148E8F8929B21970009D2521 /* WarningDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningDialog.swift; sourceTree = "<group>"; };
+		148E8F8B29B219C1009D2521 /* ConfirmationDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmationDialog.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -50,6 +54,7 @@
 		141846382966F7F50077F595 /* Screens */ = {
 			isa = PBXGroup;
 			children = (
+				148E8F8829B21956009D2521 /* Dialogs */,
 				141846392966F80C0077F595 /* SplashScreen.swift */,
 				1418463B2966F81B0077F595 /* HomeScreen.swift */,
 				1418463D2966F8250077F595 /* FirstNameScreen.swift */,
@@ -110,6 +115,15 @@
 				1454DC3A2966F69F001F2117 /* Colors.swift */,
 			);
 			path = Extensions;
+			sourceTree = "<group>";
+		};
+		148E8F8829B21956009D2521 /* Dialogs */ = {
+			isa = PBXGroup;
+			children = (
+				148E8F8929B21970009D2521 /* WarningDialog.swift */,
+				148E8F8B29B219C1009D2521 /* ConfirmationDialog.swift */,
+			);
+			path = Dialogs;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -190,6 +204,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				1418463A2966F80C0077F595 /* SplashScreen.swift in Sources */,
+				148E8F8A29B21970009D2521 /* WarningDialog.swift in Sources */,
+				148E8F8C29B219C1009D2521 /* ConfirmationDialog.swift in Sources */,
 				1418463E2966F8250077F595 /* FirstNameScreen.swift in Sources */,
 				1454DC3D2966F6B5001F2117 /* GlobalContainer.swift in Sources */,
 				1418463C2966F81B0077F595 /* HomeScreen.swift in Sources */,

@@ -1,17 +1,16 @@
-import UIKit
+import SwiftUI
 
 internal class ScreenManager {
     private let graph: NavGraph
     private let root: String
-    private var mainScreenStack: ScreenStack! = nil
-    private var modalScreenStack: ScreenStack? = nil
+    private var screenStack: ScreenStack! = nil
     
     var uiViewController: UIViewController {
-        if mainScreenStack == nil {
+        if screenStack == nil {
             ///This `ScreenStack` is initialized at the request of the `NavHost` to avoid UI blocking that can occur when interacting with the root screen.
-            self.mainScreenStack = ScreenStack(graph: self.graph, firstScreenName: self.root)
+            self.screenStack = ScreenStack(graph: self.graph, firstScreenName: self.root)
         }
-        return mainScreenStack
+        return screenStack
     }
     
     init(graph: NavGraph, root: String) {
@@ -19,77 +18,60 @@ internal class ScreenManager {
         self.root = root
     }
     
-    func clearBackstack(fromContext: Bool = true) {
-        if let modalScreenStack = modalScreenStack, fromContext {
-            modalScreenStack.clear()
-        } else {
-            modalScreenStack = nil
-            mainScreenStack.clear()
-        }
+    func clearBackstack() {
+        screenStack.clear()
     }
     
-    func pop(to screenName: String?, arguments: [String: Any]) {
+    func pop(to screenName: String?, inclusive: Bool, arguments: [String : Any]) {
         if let screenName = screenName {
-            popTo(screenName: screenName, arguments: arguments)
+            popTo(screenName: screenName, inclusive: inclusive, arguments: arguments)
         } else {
-            popLast(arguments: arguments)
+            popLast(inclusive: inclusive, arguments: arguments)
         }
     }
     
-    private func popTo(screenName: String, arguments: [String: Any]) {
-        let modalContainsScreen = modalScreenStack?.stack.contains(where: {$0.name == screenName})
-        if modalContainsScreen == true { /// Modal context
-            modalScreenStack?.removeUntil(screenName: screenName, arguments: arguments)
-        } else { /// Main context.
-            dismissModal(arguments: arguments)
-            mainScreenStack.removeUntil(screenName: screenName, arguments: arguments)
+    private func popTo(screenName: String, inclusive: Bool, arguments: [String : Any]) {
+        guard screenStack.stack.contains(where: {$0.name == screenName}) else {
+            print("🎱 ScreenManager/popTo(screenName:\(screenName), inclusive: \(inclusive), arguments:\(arguments)) 🎱")
+            print("🧐 Could not retrieve any screen named \"\(screenName)\" in this hierarchy. 🧐")
+            print("👉 Current stack is : \(screenStack.stack.map { $0.name }) 👈")
+            return
         }
+        screenStack.removeUntil(screenName: screenName, inclusive: inclusive, arguments: arguments)
     }
     
-    private func popLast(arguments: [String: Any]) {
-        if let modalScreenStack = modalScreenStack { /// Modal context
-            if modalScreenStack.stack.count > 1 {
-                modalScreenStack.removeLast(arguments: arguments)
-            } else {
-                dismissModal(arguments: arguments)
-            }
-        } else { /// Main context
-            mainScreenStack.removeLast(arguments: arguments)
+    private func popLast(inclusive: Bool, arguments: [String : Any]) {
+        let screensToRemove = inclusive ? 2 : 1
+        if screenStack.stack.count > screensToRemove {
+            screenStack.removeLast(k: screensToRemove, arguments: arguments)
+        } else {
+            print("🎱 ScreenManager/popLast(inclusive: \(inclusive), arguments:\(arguments)) 🎱")
+            print("🧐 There is not enough screens to remove in this hierarchy. 🧐")
+            print("👉 Current stack is : \(screenStack.stack.map { $0.name }) 👈")
         }
     }
     
     func push(
         screenName: String,
-        arguments: [String: Any],
+        arguments: [String : Any],
         transition: TransitionStyle,
         asNewRoot: Bool = false
     ) {
-        let screenStack = modalScreenStack ?? mainScreenStack
-        screenStack?.append(screenName: screenName, arguments: arguments, transition: transition)
+        screenStack.append(screenName: screenName, arguments: arguments, transition: transition)
         if asNewRoot { clearBackstack() }
     }
     
-    func showModal(
+    func push(
         screenName: String,
-        arguments: [String: Any]
+        transition: TransitionStyle,
+        asNewRoot: Bool = false,
+        @ViewBuilder content: () -> some View
     ) {
-        if modalScreenStack == nil {
-            modalScreenStack = ScreenStack(graph: graph, firstScreenName: screenName, arguments: arguments)
-            mainScreenStack.present(modalScreenStack!, animated: true)
-            modalScreenStack!.setOnViewBeingDismissed { [unowned self] in self.modalScreenStack = nil }
-        } else {
-            print("ScreenManager/showModal(screenName:\(screenName), arguments:\(arguments)) • Could not show modal as one is already displayed.")
-        }
+        screenStack.append(screenName: screenName, transition: transition, content: content)
+        if asNewRoot { clearBackstack() }
     }
     
-    func dismissModal(arguments: [String: Any]) {
-        modalScreenStack = nil
-        mainScreenStack.dismiss(animated: true)
-        mainScreenStack.lastScreen.onNavigateTo(arguments)
-    }
-    
-    func setOnNavigateBack(block: @escaping ([String: Any]) -> Void) {
-        let screenStack = modalScreenStack ?? mainScreenStack
-        screenStack?.lastScreen.onNavigateTo = { block($0) }
+    func setOnNavigateBack(block: @escaping ([String : Any]) -> Void) {
+        screenStack.lastScreen.onNavigateTo = { block($0) }
     }
 }

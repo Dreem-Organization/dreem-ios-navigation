@@ -2,7 +2,7 @@ import SwiftUI
 
 private struct ScreenBuilder {
     let name: String
-    @ViewBuilder let builder: ([String: Any]) -> AnyView
+    @ViewBuilder let builder: ([String : Any]) -> AnyView
 }
 
 /// A type alias for the DreemNav framework’s type for a lambda that takes `NavGraph` as entry parameter.
@@ -41,15 +41,16 @@ public class NavGraph {
     /// - Parameters:
     ///     - name: The name of the screen which will be used for the navigation.
     ///     - contentBuilder: This ViewBuilder defines how the screen will be generated, the dictionary passed as entry parameter works as an arguments map.
-    public func screen(_ name: String, @ViewBuilder contentBuilder: @escaping ([String: Any]) -> some View) {
+    public func screen(_ name: String, @ViewBuilder contentBuilder: @escaping ([String : Any]) -> some View) {
         guard !self.screenBuilders.contains(where: { $0.name == name }) else {
-            print("NavGraph/screen(\(name), contentBuilder:_) • Could not add \"\(name)\" as it already exists.")
-            print("Names must be unique.")
+            print("🎱 NavGraph/screen(\(name), contentBuilder:_) 🎱")
+            print("🧐 Could not add \"\(name)\" as it already exists. 🧐")
+            print("👉 Names must be unique. 👈")
             return
         }
         
         self.screenBuilders.append(
-            ScreenBuilder(name: name) { AnyView(contentBuilder($0)) }
+            ScreenBuilder(name: name) { AnyView(contentBuilder($0).background(ScreenTheme.backgroundColor.edgesIgnoringSafeArea(.all))) }
         )
     }
     
@@ -75,12 +76,13 @@ public class NavGraph {
         self.screen(name) { _ in contentBuilder() }
     }
     
-    internal func buildScreen(from screenName: String, and arguments: [String: Any] = [:]) -> Screen? {
+    internal func buildScreen(from screenName: String, and arguments: [String : Any] = [:]) -> Screen? {
         guard let view = self.screenBuilders.first(where: { $0.name == screenName })?.builder(arguments) else {
-            print("NavGraph/getView(from: \(screenName), and: \(arguments)) • Could not retreive any view named \"\(screenName)\".")
-            print("Available screens at this time :\(screenBuilders.listString { $0.name })")
+            print("🎱 NavGraph/buildScreen(from: \(screenName), and: \(arguments)) 🎱")
+            print("🧐 Could not retrieve any view named \"\(screenName)\". 🧐")
+            print("👉 Available screens at this time :\(screenBuilders.map { $0.name }) 👈")
             return nil
         }
-        return Screen(name: screenName, arguments: arguments, view: view)
+        return Screen(name: screenName, view: view)
     }
 }

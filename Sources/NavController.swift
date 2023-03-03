@@ -102,80 +102,70 @@ public class NavController: ObservableObject {
     ///
     /// Use this method to keep only the last screen displayed into its stack.
     /// ```
-    /// // mainStack : ScreenA, ScreenB, ScreenC and ScreenD.
+    /// // screenStack : ScreenA, ScreenB, ScreenC and ScreenD.
     ///
     /// controller.clearBackstack()
     ///
-    /// // mainStack : ScreenD
+    /// // screenStack : ScreenD
     /// ```
-    /// When a modal is presented and ``NavController/clearBackstack(fromContext:)`` with a `false` parameter is called, the modal
-    /// dismiss, each screen related to the modal are removed from the backstack
-    /// and the last screen of the `mainStack` becomes the top view displayed.
+    /// When a sheet is presented and ``NavController/clearBackstack()`` is called the sheet dismiss,
+    /// then each screen following the sheet are removed from the `screenStack`,
+    /// finally the latest screen before the sheet becomes the top view displayed.
     /// ```
-    /// // mainStack : ScreenA and ScreenB.
-    /// // modalStack : ModalA and ModalB.
+    /// // screenStack : ScreenA, ScreenB, SheetA and SheetB.
     ///
-    /// controller.clearBackstack(fromContext: false)
+    /// controller.clearBackstack()
     ///
-    /// // mainStack : ScreenB
-    /// // modalStack : nil
+    /// // screenStack : ScreenB
     /// ```
     ///
-    /// - Parameters:
-    ///     - fromContext: If this ``Bool`` is true, the clear will occur into the current navigation context : whether or not the app is presenting a modal. If it is false only the last screen of the main navigation will remain.
-    public func clearBackstack(fromContext: Bool = true) {
-        screenManager.clearBackstack(fromContext: fromContext)
+    public func clearBackstack() {
+        screenManager.clearBackstack()
     }
     
     /// Display a screen that was shown previously into the hierarchy.
     ///
     /// Use this method to remove one or many screens from the backstack.
     /// ```
-    /// // mainStack : ScreenA, ScreenB, ScreenC and ScreenD.
+    /// // screenStack : ScreenA, ScreenB, ScreenC and ScreenD.
     ///
     /// controller.pop()
     ///
-    /// // new content : ScreenA, ScreenB and ScreenC
-    /// ```
-    /// When a modal is presented and ``NavController/pop(to:arguments:)`` is called the modal may dismiss if all parameters are met.
-    /// ```
-    /// // mainStack : ScreenA, ScreenB, ScreenC and ScreenD.
-    /// // modalStack : ModalA, ModalB and ModalC
+    /// // screenStack : ScreenA, ScreenB and ScreenC
     ///
-    /// controller.pop(to: "ScreenB")
+    /// controller.pop(to: "ScreenB", inclusive: true)
     ///
-    /// // mainStack : ScreenA and ScreenB
-    /// // modalStack : nil
+    /// // screenStack : ScreenA
     /// ```
-    /// As you can see in the above example, as we are using `ScreenB` screenName in parameter : we are popping to its related screen
-    /// and each screen shown after `ScreenB` are erased from backstack.
+    /// As you can see in the above example, as we are using `ScreenB` as target destination with `inclusive` parameter.
+    /// Each screen shown after `ScreenB` included are erased from screenStack.
     ///
     /// - Parameters:
     ///     - screenName: This `String?` allows you to navigate back to a chosen screen by entering its name.
+    ///     - inclusive: The targetted screen is also popped out of the stack.
     ///     - arguments: This `Dictionary` holds, under its key/value pairs, data that you want to share with the popped screen.
-    public func pop(to screenName: String? = nil, arguments: [String: Any] = [:]) {
-        screenManager.pop(to: screenName, arguments: arguments)
+    public func pop(to screenName: String? = nil, inclusive: Bool = false, arguments: [String : Any] = [:]) {
+        screenManager.pop(to: screenName, inclusive: inclusive, arguments: arguments)
     }
     
     /// Push a new screen to the backstack.
     ///
     /// Use this method to add a screen to the last navigation contexts stack.
     /// ```
-    /// // mainStack : ScreenA, ScreenB and ScreenC.
-    /// // modalStack : ModalA and ModalB.
+    /// // screenStack : ScreenA, ScreenB and ScreenC.
     ///
-    /// controller.push(screenName: "ModalC")
+    /// controller.push(screenName: "SheetA", transition: .sheet)
     ///
-    /// // mainStack : ScreenA, ScreenB and ScreenC.
-    /// // modalStack : ModalA, ModalB and ModalC.
+    /// // screenStack : ScreenA, ScreenB, ScreenC and SheetA.
+    ///
     /// ```
     /// Depending the parameters used, the screen could be the only one in the stack.
     /// ```
-    /// // mainStack : ScreenA, ScreenB and ScreenC.
+    /// // screenStack : ScreenA, ScreenB and ScreenC.
     ///
     /// controller.push(screenName: "ScreenD", asNewRoot: true)
     ///
-    /// // mainStack : ScreenD
+    /// // screenStack : ScreenD
     /// ```
     /// If the controller cannot find any related view from the graph, console will prompt logs.
     /// 
@@ -186,63 +176,55 @@ public class NavController: ObservableObject {
     ///     - asNewRoot: Indicate wheter or not the pushed destination will become root.
     public func push(
         screenName: String,
-        arguments: [String: Any] = [:],
+        arguments: [String : Any] = [:],
         transition: TransitionStyle = .coverHorizontal,
         asNewRoot: Bool = false
     ) {
         screenManager.push(screenName: screenName, arguments: arguments, transition: transition, asNewRoot: asNewRoot)
     }
     
-    /// Presents a screen into a modal presentation style.
+    /// Push a new screen to the backstack.
     ///
-    /// Use this method to show the modal navigation context.
+    /// Use this method to add a screen to the last navigation contexts stack.
     /// ```
-    /// // mainStack : ScreenA, ScreenB and ScreenC.
-    /// // modalStack : nil
+    /// // screenStack : ScreenA, ScreenB and ScreenC.
     ///
-    /// controller.showModal(screenName: "ModalA")
+    /// controller.push(screenName: "DialogA", transition: .dialog) {
+    ///     Text("I am DialogA")
+    /// }
     ///
-    /// // mainStack : ScreenA, ScreenB and ScreenC.
-    /// // modalStack : ModalA.
+    /// // screenStack : ScreenA, ScreenB, ScreenC and DialogA.
+    /// ```
+    /// Depending the parameters used, the screen could be the only one in the stack.
+    /// ```
+    /// // screenStack : ScreenA, ScreenB and ScreenC.
+    ///
+    /// controller.push(screenName: "ScreenD", asNewRoot: true) {
+    ///     Text("I am ScreenD")
+    /// }
+    ///
+    /// // screenStack : ScreenD
     /// ```
     /// If the controller cannot find any related view from the graph, console will prompt logs.
-    /// If the modal navigation context is already displayed, nothing else will happen.
     ///
     /// - Parameters:
     ///     - screenName: The name of the screen that will be used to retrieve a ViewBuilding from the `NavGraph`.
-    ///     - arguments: This `Dictionary` holds, under its key/value pairs, data that you want to share with the modal.
-    public func showModal(
+    ///     - transition: Sets the animation that will be triggered.
+    ///     - asNewRoot: Indicate wheter or not the pushed destination will become root.
+    ///     - content: This `() -> some View` closure defines the screen that you want to see displayed.
+    public func push(
         screenName: String,
-        arguments: [String: Any] = [:]
+        transition: TransitionStyle = .coverHorizontal,
+        asNewRoot: Bool = false,
+        @ViewBuilder content: () -> some View
     ) {
-        screenManager.showModal(screenName: screenName, arguments: arguments)
+        screenManager.push(screenName: screenName, transition: transition, asNewRoot: asNewRoot, content: content)
     }
     
-    /// Dismiss the displayed modal.
+    /// Saves back navigation instructions
     ///
-    /// When a modal is presented and ``NavController/dismissModal(arguments:)`` is called, the modal
-    /// dismiss and each screen related to the modal are removed from backstack.
-    /// ```
-    /// // mainStack : ScreenA and ScreenB.
-    /// // modalStack : ModalA and ModalB.
-    ///
-    /// controller.dismissModal()
-    ///
-    /// // mainStack : ScreenA and ScreenB.
-    /// // modalStack : nil
-    /// ```
-    ///
-    /// - Parameters:
-    ///     - arguments: This `Dictionary` holds, under its key/value pairs, data that you want to share with the popped screen.
-    public func dismissModal(arguments: [String: Any] = [:]) {
-        screenManager.dismissModal(arguments: arguments)
-    }
-    
-    
-    /// Dismiss the displayed modal.
-    ///
-    /// When a modal is presented and ``NavController/dismissModal(arguments:)`` is called, the modal
-    /// dismiss and each screen related to the modal are removed from backstack.
+    /// When ``NavController/setOnNavigateBack(block:)`` is called, the instructions
+    /// are linked to the calling screen, whenever we navigate back to it, the lambda contained into the closure is triggered.
     /// ```
     ///    private init() {
     ///        controller.setOnNavigateBack { args in
@@ -258,8 +240,8 @@ public class NavController: ObservableObject {
     /// ```
     ///
     /// - Parameters:
-    ///     - block: This lambda defines how the screen will be generated, the dictionary passed as entry parameter works as an arguments map.
-    public func setOnNavigateBack(block: @escaping ([String: Any]) -> Void) {
+    ///     - block: This lambda defines the instructions to execute on a back navigation to the calling screen, the dictionary passed as entry parameter works as an arguments map.
+    public func setOnNavigateBack(block: @escaping ([String : Any]) -> Void) {
         screenManager.setOnNavigateBack(block: block)
     }
 }

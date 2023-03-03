@@ -7,6 +7,12 @@ internal class NavigationController: UINavigationController {
     init(viewController: UIViewController) {
         super.init(nibName: nil, bundle: nil)
         super.setViewControllers([viewController], animated: true)
+        
+        let blurEffect = UIBlurEffect(style: UIBlurEffect.Style.dark)
+        let blurEffectView = UIVisualEffectView(effect: blurEffect)
+        blurEffectView.frame = view.bounds
+        blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        self.view.insertSubview(blurEffectView, at: 0)
     }
     
     func setOnViewBeingDismissed(block: (() -> Void)? = nil) {

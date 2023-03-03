@@ -1,4 +1,4 @@
-import UIKit
+import SwiftUI
 
 internal class ScreenStack: NavigationController {
     private let graph: NavGraph
@@ -19,56 +19,87 @@ internal class ScreenStack: NavigationController {
     
     func append(
         screenName: String,
-        arguments: [String: Any] = [:],
+        arguments: [String : Any] = [:],
         transition: TransitionStyle
     ) {
         guard let newScreen = graph.buildScreen(from: screenName, and: arguments) else { return }
-        
-        if transition == .coverHorizontal {
-            lastScreen.navigationController?.pushViewController(newScreen, animated: true)
-        } else {
-            let navigationController = NavigationController(viewController: newScreen)
-            navigationController.modalPresentationStyle = .fullScreen
-            navigationController.modalTransitionStyle = transition == .crossDissolve ? .crossDissolve : .coverVertical
-            lastScreen.navigationController?.present(navigationController, animated: true)
-        }
-        self.stack.append(newScreen)
+        append(screen: newScreen, transition: transition)
     }
     
-    func clear() {
+    func append(
+        screenName: String,
+        transition: TransitionStyle,
+        @ViewBuilder content: () -> some View
+    ) {
+        let newScreen = Screen(name: screenName, view: content())
+        append(screen: newScreen, transition: transition)
+    }
+    
+    private func append(
+        screen: Screen,
+        transition: TransitionStyle
+    ) {
+        if transition == .coverHorizontal {
+            lastScreen.navigationController?.pushViewController(screen, animated: true)
+        } else {
+            if transition == .dialog { screen.view.backgroundColor = nil }
+            
+            let navigationController = NavigationController(viewController: screen)
+            navigationController.setOnViewBeingDismissed { self.stack.removeAfter(screen, inclusive: true) }
+            navigationController.modalTransitionStyle   = transition == .coverVertical || transition == .sheet ? .coverVertical : .crossDissolve
+            navigationController.modalPresentationStyle = transition == .dialog         ? .overFullScreen :
+                                                          transition == .coverVertical  ? .fullScreen :
+                                                          transition == .sheet          ? .pageSheet
+                                                        /*transition == .crossDissolve*/: .overCurrentContext
+            lastScreen.present(navigationController, animated: true)
+        }
+        self.stack.append(screen)
+    }
+    
+    func clear() {//TODO: Fix behavior in 1.2.1
         self.stack = [lastScreen]
         if let parentNavigationController = lastScreen.navigationController {
             parentNavigationController.setViewControllers(stack, animated: true)
         }
-        print("ScreenStack/clear() • \(lastScreen.name) is the new root.")
+        print("🎱 ScreenStack/clear() 🎱")
+        print("⚪️ \(lastScreen.name) is the new root. ⚪️")
     }
     
-    func removeUntil(screenName: String, arguments: [String: Any]) {
+    func removeUntil(screenName: String, inclusive: Bool, arguments: [String : Any]) {
         guard let screenToReachIndex = stack.firstIndex(where: { $0.name == screenName }) else {
-            print("ScreenStack/removeUntil(screenName:\(screenName), arguments:\(arguments)) • Could not retreive any screen named \"\(screenName)\" in this hierarchy.")
-            print("Actual stack is : [\(stack.listString { $0.name })]")
+            print("🎱 ScreenStack/removeUntil(screenName:\(screenName), arguments:\(arguments)) 🎱")
+            print("🧐 Could not retrieve any screen named \"\(screenName)\" in this hierarchy. 🧐")
+            print("🚧 It should never happen : please contact developers team. 🚧")
             return
         }
-        let count = endIndex - screenToReachIndex
+        var count = endIndex - screenToReachIndex
+        if screenToReachIndex > 0 && inclusive {
+            count += 1
+        }
         removeLast(k: count, arguments: arguments)
     }
     
     func removeLast(
         k: Int = 1,
-        arguments: [String: Any]
+        arguments: [String : Any]
     ) {
         guard self.stack.count > k else { /// The number of screen stacked must be higher than the number we are willing to remove.
-            print("ScreenStack/removeLast(k:\(k), arguments:\(arguments)) • The amount of screen you want to remove exceed the actual content count.")
+            print("🎱 ScreenStack/removeLast(k:\(k), arguments:\(arguments)) 🎱")
+            print("🧐 The amount of screen you want to remove exceed the actual content count. 🧐")
+            print("🚧 It should never happen : please contact developers team. 🚧")
             return
         }
-        let removedScreenNavigationController = lastScreen.navigationController
-        stack.removeLast(k)
-        lastScreen.onNavigateTo(arguments)
+        
+        ///In order to reduce the number of call to ``UIViewController/dismiss(animated, completion)`` :
+        /// - We extract the screens that we want to remove.
+        /// - We distinct screens by their `modalPresentationStyle`
+        /// - We reverse the collection in order to dismiss the topest screen first.
+        for screen in stack.removeLast(k: k)
+            .distinct(by: \.navigationController?.modalPresentationStyle)
+            .reversed() { screen.presentingViewController?.dismiss(animated: true) }
+        
         let lastNavigationController = lastScreen.navigationController as? NavigationController
-        if removedScreenNavigationController == lastNavigationController {
-            lastNavigationController?.safePopTo(viewController: lastScreen)
-        } else {
-            lastNavigationController?.dismiss(animated: true)
-        }
+        lastNavigationController?.safePopTo(viewController: lastScreen)
+        lastScreen.onNavigateTo(arguments)
     }
 }

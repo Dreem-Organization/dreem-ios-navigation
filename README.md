@@ -16,9 +16,7 @@
     - [push](#push) 
     - [pop](#pop) 
     - [setOnNavigateBack](#setOnNavigateBack) 
-    - [showModal](#showModal) 
-    - [dismissModal](#dismissModal) 
-    - [clearBackstack](#clearBackstack) 
+    - [setNewRoot](#setNewRoot) 
  - [Sample](#sample)  
 
 
@@ -46,7 +44,7 @@ way to implement it.
     let package = Package(
         name: "YourPackage",
         dependencies: [
-            .package(url: "https://github.com/Dreem-Organization/dreem-ios-navigation", from: "1.0.0")
+            .package(url: "https://github.com/Dreem-Organization/dreem-ios-navigation", from: "1.x.x")
       ]
     )
     ```
@@ -118,7 +116,7 @@ your newly set navControllers public methods from anywhere in your app !
 > In order to manipulate the navigation properly, you have to use the same instance 
 > of the `NavController` that you have passed to `NavHost` as parameter.
 >
-> Consider using an IOC library such as **[Swinject](https://github.com/Swinject/Swinject)**
+> Consider using an DI library such as **[Swinject](https://github.com/Swinject/Swinject)**
 > Or a singleton design pattern.
 
 
@@ -190,7 +188,6 @@ Those arguments are handled into the place where you are navigating back (see [s
 Allows you to define how the app should handle arguments on a **pop** navigation :
 ```swift
 private class HomeViewModel: ObservableObject 
-    private static var INSTANCE: HomeViewModel? = nil
     private var controller: NavController = resolve()
     @Published private(set) var firstName: String = ""
     @Published private(set) var lastName: String = ""
@@ -210,43 +207,14 @@ private class HomeViewModel: ObservableObject
 }
 ```
 
-### showModal
-Presents a **sheet** from the bottom of the screen
-```swift
-private class HomeViewModel: ObservableObject {
-    private var controller: NavController = resolve()
-    @Published private(set) var firstName: String = ""
-
-    func goToFirstName() {
-        controller.showModal(
-            screenName: Route.FirstName.name,
-            arguments: ["first_name": firstName]
-        )
-    }
-}
-```
-Arguments can be passed and handle just as described in the **[push](#push)** part.
-
-### dismissModal
-Dismiss the **sheet** if it is presented.
+### setNewRoot
+Clear the entire screen's stack and set a new screen as root.
 ```swift
 private class HomeViewModel: ObservableObject {
     private var controller: NavController = resolve()
     
-    func closeModal() {
-        controller.dismissModal()
-    }
-}
-```
-
-### clearBackstack
-Removes each screen from the backstack excepted the last one.
-```swift
-private class HomeViewModel: ObservableObject {
-    private var controller: NavController = resolve()
-    
-    func clearBackstack() {
-        controller.clearBackstack()
+    func goToAuth() {
+        controller.setNewRoot(screenName: "Login")
     }
 }
 ```

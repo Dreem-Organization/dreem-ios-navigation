@@ -18,6 +18,21 @@ Mention whether you follow Semantic Versioning.
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
+## [1.3.0] - 2023-05-16
+
+### Added
+- Transitions `none`, `coverFullscreen` and `coverOverFullscreen`
+- Method `NavController.setNewRoot()`
+
+### Removed
+- Transitions `crossDisolve` and `dialog`
+- Method `NavController.clearBackStack()`
+- Use of `UINavigationController` internally
+
+### Fixed
+- Screens were kept in memory after clearing the backstack
+- Wrong size of top safeArea in iOS 15
+
 ## [1.2.0] - 2023-03-03
 
 ### Added

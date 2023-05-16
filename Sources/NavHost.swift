@@ -22,32 +22,29 @@ import SwiftUI
 /// The complete list of default modifiers provides a large set of controls
 /// for managing this view.
 public struct NavHost: View {
-    @ObservedObject private var controller: NavController
+    @ObservedObject
+    private var controller: NavController
     
-    public init(controller: NavController, backgroundColor: Color = .clear) {
+    public init(controller: NavController, backgroundColor: Color) {
         self.controller = controller
-        ScreenTheme.backgroundColor = backgroundColor
+        self.controller.backgroundColor = UIColor(backgroundColor)
     }
     
     public var body: some View {
-        self.representable.background(ScreenTheme.backgroundColor.edgesIgnoringSafeArea(.all))
+        EmptyView()
+            .onAppear {
+                if controller.viewController == nil {
+                    controller.viewController = window?.rootViewController
+                }
+            }
     }
-}
-
-private extension NavHost {
-    private var representable: NavHostRepresentable {
-        NavHostRepresentable(
-            viewController: self.controller.screenManager.uiViewController
-        )
+    
+    private var window: UIWindow? {
+        guard let scene = UIApplication.shared.connectedScenes.first,
+              let windowSceneDelegate = scene.delegate as? UIWindowSceneDelegate,
+              let window = windowSceneDelegate.window else {
+            return nil
+        }
+        return window
     }
-}
-
-private struct NavHostRepresentable: UIViewControllerRepresentable {
-    var viewController: UIViewController
-    
-    func makeUIViewController(context: Context) -> UIViewController { viewController }
-    
-    func updateUIViewController(_ baseViewController: UIViewController, context: Context) { }
-
-    typealias UIViewControllerType = UIViewController
 }

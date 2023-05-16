@@ -11,6 +11,8 @@ public typealias NavGraphBuilder = (NavGraph) -> Void
 public class NavGraph {
     private var screenBuilders: [ScreenBuilder] = []
     
+    internal var backgroundColor: Color?
+    
     /// Adds a new screen builder to the `NavGraph`.
     ///
     /// Use this method to  generate a new `ScreenBuilder` embedding a ViewBuilder that needs arguments to be built, and add it to the mutable array `screenBuilders`.
@@ -50,7 +52,7 @@ public class NavGraph {
         }
         
         self.screenBuilders.append(
-            ScreenBuilder(name: name) { AnyView(contentBuilder($0).background(ScreenTheme.backgroundColor.edgesIgnoringSafeArea(.all))) }
+            ScreenBuilder(name: name) { AnyView(contentBuilder($0)) }
         )
     }
     
@@ -83,6 +85,6 @@ public class NavGraph {
             print("👉 Available screens at this time :\(screenBuilders.map { $0.name }) 👈")
             return nil
         }
-        return Screen(name: screenName, view: view)
+        return Screen(name: screenName, backgroundColor: backgroundColor, view: view)
     }
 }

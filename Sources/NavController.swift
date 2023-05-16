@@ -61,7 +61,7 @@ import SwiftUI
 /// > Warning ;
 /// > To use the ``NavController`` properly you have to use the same
 /// > instance of the class that you have initialized with the graph, consider
-/// > using singleton pattern or external ioc library as ``Swinject``.
+/// > using singleton pattern or external DI library as ``Swinject``.
 ///
 /// After that, inject the navController anywhere you want to use it.
 /// ```
@@ -69,13 +69,9 @@ import SwiftUI
 ///    private var controller: NavController = resolve()
 ///
 ///    func goToFirstName() {
-///        controller.showModal(
+///        controller.push(
 ///            screenName: Route.FirstName.name
 ///        )
-///    }
-///
-///    func clearBackstack() {
-///        controller.clearBackstack()
 ///    }
 ///
 ///    func backToSplash() {
@@ -84,7 +80,19 @@ import SwiftUI
 ///}
 /// ```
 public class NavController: ObservableObject {
-    internal let screenManager: ScreenManager
+    private let navGraph = NavGraph()
+    private let root: String
+    private var screenStack: ScreenStack!
+    
+    internal var backgroundColor: UIColor?
+    
+    internal var viewController: UIViewController? {
+        didSet {
+            guard let viewController = viewController else { return }
+            let rootScreen = navGraph.buildScreen(from: root, and: [:])!
+            self.screenStack = ScreenStack(viewController: viewController, screen: rootScreen)
+        }
+    }
     
     /// - Parameters:
     ///     - root: The name of the first screen that will be displayed.
@@ -93,34 +101,25 @@ public class NavController: ObservableObject {
         root: String,
         builder: NavGraphBuilder
     ) {
-        let graph = NavGraph()
-        builder(graph)
-        self.screenManager = ScreenManager(graph: graph, root: root) 
+        self.root = root
+        builder(navGraph)
     }
     
-    /// Clear the entire backstack under the last view and set it as new `root`.
+    /// Clear the entire screen's stack and set `screenName` as new root.
     ///
     /// Use this method to keep only the last screen displayed into its stack.
     /// ```
-    /// // screenStack : ScreenA, ScreenB, ScreenC and ScreenD.
+    /// // screenStack : ScreenA, ScreenB, ScreenC.
     ///
-    /// controller.clearBackstack()
+    /// controller.setNewRoot(screenName: "ScreenD")
     ///
     /// // screenStack : ScreenD
     /// ```
-    /// When a sheet is presented and ``NavController/clearBackstack()`` is called the sheet dismiss,
-    /// then each screen following the sheet are removed from the `screenStack`,
-    /// finally the latest screen before the sheet becomes the top view displayed.
-    /// ```
-    /// // screenStack : ScreenA, ScreenB, SheetA and SheetB.
+    /// This method uses the transition `TransitionStyle.coverFullscreen`.
     ///
-    /// controller.clearBackstack()
-    ///
-    /// // screenStack : ScreenB
-    /// ```
-    ///
-    public func clearBackstack() {
-        screenManager.clearBackstack()
+    public func setNewRoot(screenName: String, arguments: [String: Any] = [:]) {
+        guard let newScreen = navGraph.buildScreen(from: screenName, and: arguments) else { return }
+        screenStack.clear(asNewRoot: newScreen)
     }
     
     /// Display a screen that was shown previously into the hierarchy.
@@ -145,9 +144,13 @@ public class NavController: ObservableObject {
     ///     - inclusive: The targetted screen is also popped out of the stack.
     ///     - arguments: This `Dictionary` holds, under its key/value pairs, data that you want to share with the popped screen.
     public func pop(to screenName: String? = nil, inclusive: Bool = false, arguments: [String : Any] = [:]) {
-        screenManager.pop(to: screenName, inclusive: inclusive, arguments: arguments)
+        if let screenName = screenName {
+            screenStack.popUntil(screenName: screenName, inclusive: inclusive, arguments: arguments)
+        } else {
+            screenStack.pop(arguments: arguments)
+        }
     }
-    
+        
     /// Push a new screen to the backstack.
     ///
     /// Use this method to add a screen to the last navigation contexts stack.
@@ -159,28 +162,21 @@ public class NavController: ObservableObject {
     /// // screenStack : ScreenA, ScreenB, ScreenC and SheetA.
     ///
     /// ```
-    /// Depending the parameters used, the screen could be the only one in the stack.
-    /// ```
-    /// // screenStack : ScreenA, ScreenB and ScreenC.
-    ///
-    /// controller.push(screenName: "ScreenD", asNewRoot: true)
-    ///
-    /// // screenStack : ScreenD
-    /// ```
     /// If the controller cannot find any related view from the graph, console will prompt logs.
     /// 
     /// - Parameters:
     ///     - screenName: The name of the screen that will be used to retrieve a ViewBuilding from the `NavGraph`.
     ///     - arguments: This `Dictionary` holds, under its key/value pairs, data that you want to share with the newly pushed screen.
     ///     - transition: Sets the animation that will be triggered.
-    ///     - asNewRoot: Indicate wheter or not the pushed destination will become root.
+    ///     - completion: The block to execute after the push finishes. This block has no return value and takes no parameters.
     public func push(
         screenName: String,
         arguments: [String : Any] = [:],
         transition: TransitionStyle = .coverHorizontal,
-        asNewRoot: Bool = false
+        completion: @escaping () -> Void = {}
     ) {
-        screenManager.push(screenName: screenName, arguments: arguments, transition: transition, asNewRoot: asNewRoot)
+        guard let newScreen = navGraph.buildScreen(from: screenName, and: arguments) else { return }
+        screenStack.push(screen: newScreen, transition: transition, completion: completion)
     }
     
     /// Push a new screen to the backstack.
@@ -189,36 +185,30 @@ public class NavController: ObservableObject {
     /// ```
     /// // screenStack : ScreenA, ScreenB and ScreenC.
     ///
-    /// controller.push(screenName: "DialogA", transition: .dialog) {
-    ///     Text("I am DialogA")
-    /// }
-    ///
-    /// // screenStack : ScreenA, ScreenB, ScreenC and DialogA.
-    /// ```
-    /// Depending the parameters used, the screen could be the only one in the stack.
-    /// ```
-    /// // screenStack : ScreenA, ScreenB and ScreenC.
-    ///
-    /// controller.push(screenName: "ScreenD", asNewRoot: true) {
+    /// controller.push(screenName: "ScreenD") {
     ///     Text("I am ScreenD")
     /// }
     ///
-    /// // screenStack : ScreenD
+    /// // screenStack : ScreenA, ScreenB, ScreenC and ScreenD.
     /// ```
     /// If the controller cannot find any related view from the graph, console will prompt logs.
     ///
     /// - Parameters:
     ///     - screenName: The name of the screen that will be used to retrieve a ViewBuilding from the `NavGraph`.
     ///     - transition: Sets the animation that will be triggered.
-    ///     - asNewRoot: Indicate wheter or not the pushed destination will become root.
+    ///     - completion: The block to execute after the push finishes. This block has no return value and takes no parameters.
     ///     - content: This `() -> some View` closure defines the screen that you want to see displayed.
     public func push(
         screenName: String,
         transition: TransitionStyle = .coverHorizontal,
-        asNewRoot: Bool = false,
+        completion: @escaping () -> Void = {},
         @ViewBuilder content: () -> some View
     ) {
-        screenManager.push(screenName: screenName, transition: transition, asNewRoot: asNewRoot, content: content)
+        screenStack.push(
+            screen: Screen(name: screenName, backgroundColor: navGraph.backgroundColor, view: content()),
+            transition: transition,
+            completion: completion
+        )
     }
     
     /// Saves back navigation instructions
@@ -242,6 +232,6 @@ public class NavController: ObservableObject {
     /// - Parameters:
     ///     - block: This lambda defines the instructions to execute on a back navigation to the calling screen, the dictionary passed as entry parameter works as an arguments map.
     public func setOnNavigateBack(block: @escaping ([String : Any]) -> Void) {
-        screenManager.setOnNavigateBack(block: block)
+        screenStack.currentScreen.onNavigateTo = block
     }
 }
